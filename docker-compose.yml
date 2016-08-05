@@ -1,0 +1,184 @@
+version: '2'
+services:
+  crate1:
+    image: crate:latest
+    command: 'crate -Des.node.name=crate1 -Des.cluster.name=DEV -Des.discovery.zen.minimum_master_nodes=2 -Des.gateway.recover_after_nodes=2 -Des.gateway.recover_after_time=5m -Des.gateway.expected_nodes=3 -Des.http.compression=true'
+    container_name: crate1
+    hostname: crate1
+    restart: always
+    ports:
+      - "4200:4200"
+      - "4300:4300"
+  crate2:
+    image: crate:latest
+    command: 'crate -Des.node.name=crate2 -Des.cluster.name=DEV -Des.discovery.zen.minimum_master_nodes=2 -Des.gateway.recover_after_nodes=2 -Des.gateway.recover_after_time=5m -Des.gateway.expected_nodes=3 -Des.http.compression=true'
+    container_name: crate2
+    hostname: crate2
+    restart: always
+    depends_on:
+      - crate1
+    links:
+      - crate1
+  crate3:
+    image: crate:latest
+    command: 'crate -Des.node.name=crate3 -Des.cluster.name=DEV -Des.discovery.zen.minimum_master_nodes=2 -Des.gateway.recover_after_nodes=2 -Des.gateway.recover_after_time=5m -Des.gateway.expected_nodes=3 -Des.http.compression=true'
+    container_name: crate3
+    hostname: crate3
+    restart: always
+    depends_on:
+      - crate2
+    links:
+      - crate2
+  influxdb:
+    image: influxdb
+    container_name: influxdb
+    hostname: influxdb
+    restart: always
+    ports:
+      - "8083:8083"
+      - "8086:8086"
+  redis:
+    build: redis
+    image: redis
+    container_name: redis
+    hostname: redis
+    restart: always
+    ports:
+      - "6379:6379"
+  rmq1:
+    build: rmq
+    image: rmq
+    container_name: rmq1
+    hostname: rmq1
+    restart: always
+    environment:
+      - ERLANG_COOKIE=5673f5aeb1d3a2db81de74a78f44ba14
+    ports:
+      - "5671:5671"
+      - "5672:5672"
+      - "15672:15672"
+  rmq2:
+    build: rmq
+    image: rmq
+    container_name: rmq2
+    hostname: rmq2
+    restart: always
+    links:
+      - rmq1
+    environment:
+      - ERLANG_COOKIE=5673f5aeb1d3a2db81de74a78f44ba14
+      - CLUSTER_WITH=rmq1
+      - RAM_NODE=true
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+  rmq3:
+    build: rmq
+    image: rmq
+    container_name: rmq3
+    hostname: rmq3
+    restart: always
+    links:
+      - rmq1
+      - rmq2
+    environment:
+      - ERLANG_COOKIE=5673f5aeb1d3a2db81de74a78f44ba14
+      - CLUSTER_WITH=rmq1
+      - RAM_NODE=true
+    ports:
+      - "5674:5672"
+  sensu-server1:
+    build: sensu-server
+    image: sensu-server
+    container_name: sensu-server1
+    hostname: sensu-server1
+    restart: always
+    depends_on:
+      - crate1
+      - influxdb
+      - redis
+      - rmq1
+      - rmq2
+      - rmq3
+    links:
+      - crate1
+      - crate2
+      - crate3
+      - influxdb
+      - redis
+      - rmq1
+      - rmq2
+      - rmq3
+    environment:
+      - RABBITMQ_HOST=rmq1,rmq2,rmq3
+      - CLIENT_SUBSCRIPTIONS=metrics_os
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    entrypoint: dockerize -wait tcp://redis:6379 -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh
+  sensu-server2:
+    build: sensu-server
+    image: sensu-server
+    container_name: sensu-server2
+    hostname: sensu-server2
+    restart: always
+    depends_on:
+      - crate1
+      - influxdb
+      - redis
+      - rmq1
+      - rmq2
+      - rmq3
+    links:
+      - crate1
+      - crate2
+      - crate3
+      - influxdb
+      - redis
+      - rmq1
+      - rmq2
+      - rmq3
+    environment:
+      - RABBITMQ_HOST=rmq1,rmq2,rmq3
+      - CLIENT_SUBSCRIPTIONS=metrics_os
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    entrypoint: dockerize -wait tcp://redis:6379 -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh
+  sensu-api:
+    build: sensu-api
+    image: sensu-api
+    container_name: sensu-api
+    hostname: sensu-api
+    restart: "no"
+    depends_on:
+      - redis
+      - rmq1
+      - rmq2
+      - rmq3
+      - sensu-server1
+    links:
+      - rmq1
+      - rmq2
+      - rmq3
+      - redis
+    environment:
+      - RABBITMQ_HOST=rmq1,rmq2,rmq3
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    entrypoint: dockerize -wait tcp://redis:6379 -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh
+    ports:
+      - "3000:3000"
+      - "4567:4567"
+  sensu-client1:
+    build: sensu-client
+    image: sensu-client
+    container_name: sensu-client1
+    hostname: sensu-client1
+    restart: "no"
+    links:
+      - rmq1
+    environment:
+      - RABBITMQ_HOST=rmq1,rmq2,rmq3
+      - CLIENT_SUBSCRIPTIONS=metrics_os
+    ports:
+      - "3030:3030"
+    entrypoint: dockerize -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh

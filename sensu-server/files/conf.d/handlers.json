@@ -1,0 +1,7 @@
+{ "handlers": { "default": { "type": "set", "handlers": ["influxdb-events","crate-events"] },
+                "metrics": { "type": "set", "handlers": ["influxdb-metrics","crate-metrics"] },
+                "registration": { "type": "set", "handlers": ["influxdb-events","crate-events"] },
+                "deregistration": { "type": "set", "handlers": ["influxdb-events","crate-events","deregistration_cmd"] },
+                "deregistration_cmd": { "type": "pipe", "command": "handler-sensu-deregister.rb", "severities": [ "warning" ] }
+              }
+}

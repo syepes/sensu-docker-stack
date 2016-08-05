@@ -1,0 +1,15 @@
+*~
+*.swp
+.DS_Store
+.DS_Store?
+logs/
+temp/
+*.rsa
+*.rsa.pub
+*.key
+*.pem
+*.p12
+*.cer
+sensu_ssl_tool/client/
+sensu_ssl_tool/sensu_ca/
+sensu_ssl_tool/server/

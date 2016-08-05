@@ -1,0 +1,25 @@
+{
+  "checks": {
+    "metrics-sa_load": {
+      "type": "metric",
+      "command": "metrics-load.rb",
+      "interval": 10,
+      "handlers": [ "metrics" ],
+      "standalone": true
+    },
+    "metrics-sa_cpu": {
+      "type": "metric",
+      "command": "metrics-cpu.rb",
+      "interval": 10,
+      "handlers": [ "metrics" ],
+      "standalone": true
+    },
+    "metrics-sa_memory": {
+      "type": "metric",
+      "command": "metrics-memory.rb",
+      "interval": 10,
+      "handlers": [ "metrics" ],
+      "standalone": true
+    }
+  }
+}

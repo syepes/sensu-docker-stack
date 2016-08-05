@@ -1,0 +1,74 @@
+{
+  "checks": {
+    "metrics_load": {
+      "type": "metric",
+      "command": "metrics-load.rb",
+      "interval": 20,
+      "handlers": [ "metrics" ],
+      "subscribers": [ "metrics_os" ]
+    },
+    "metrics_cpu": {
+      "type": "metric",
+      "command": "metrics-cpu.rb",
+      "interval": 20,
+      "handlers": [ "metrics" ],
+      "subscribers": [ "metrics_os" ]
+    },
+    "metrics_memory": {
+      "type": "metric",
+      "command": "metrics-memory.rb",
+      "interval": 20,
+      "handlers": [ "metrics" ],
+      "subscribers": [ "metrics_os" ]
+    },
+    "metrics_memory_pct": {
+      "type": "metric",
+      "command": "metrics-memory-percent.rb",
+      "interval": 20,
+      "handlers": [ "metrics" ],
+      "subscribers": [ "metrics_os" ]
+    },
+    "metrics_disk": {
+      "type": "metric",
+      "command": "metrics-disk.rb",
+      "interval": 20,
+      "handlers": [ "metrics" ],
+      "subscribers": [ "metrics_os" ]
+    },
+    "metrics_disk_usage": {
+      "type": "metric",
+      "command": "metrics-disk-usage.rb",
+      "interval": 20,
+      "handlers": [ "metrics" ],
+      "subscribers": [ "metrics_os" ]
+    },
+    "metrics_disk_capacity": {
+      "type": "metric",
+      "command": "metrics-disk-capacity.rb",
+      "interval": 20,
+      "handlers": [ "metrics" ],
+      "subscribers": [ "metrics_os" ]
+    },
+    "metrics_net": {
+      "type": "metric",
+      "command": "metrics-net.rb",
+      "interval": 20,
+      "handlers": [ "metrics" ],
+      "subscribers": [ "metrics_os" ]
+    },
+    "metrics_net_if": {
+      "type": "metric",
+      "command": "metrics-interface.rb",
+      "interval": 20,
+      "handlers": [ "metrics" ],
+      "subscribers": [ "metrics_os" ]
+    },
+    "metrics_net_sockstat": {
+      "type": "metric",
+      "command": "metrics-sockstat.rb",
+      "interval": 20,
+      "handlers": [ "metrics" ],
+      "subscribers": [ "metrics_os" ]
+    }
+  }
+}
