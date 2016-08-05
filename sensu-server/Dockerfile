@@ -53,5 +53,6 @@ RUN         chmod 755 /*.sh
 
 CMD         ["/run.sh"]
 
-HEALTHCHECK --interval=1m --timeout=3s --retries=3 CMD ps -e |grep sensu-server || exit 1
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD ps -p $(cat /var/run/sensu/sensu-server.pid) || exit 1
+
 

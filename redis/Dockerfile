@@ -29,4 +29,5 @@ WORKDIR    ["/data"]
 EXPOSE     6379
 CMD        ["redis-server", "/etc/redis.conf"]
 
-HEALTHCHECK --interval=1m --timeout=3s --retries=3 CMD echo -e "PING\r\n" |nc localhost 6379 |grep +PONG || exit 1
+HEALTHCHECK --interval=15s --timeout=3s --retries=3 CMD echo -e "PING\r\n" |nc localhost 6379 |grep +PONG || exit 1
+

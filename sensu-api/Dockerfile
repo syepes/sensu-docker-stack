@@ -48,4 +48,5 @@ RUN         chmod 755 /*.sh
 EXPOSE      3000 4567
 CMD         ["/run.sh"]
 
-HEALTHCHECK --interval=1m --timeout=3s --retries=3 CMD curl -s http://127.0.0.1:4567/info || exit 1
+HEALTHCHECK --interval=10s --timeout=5s --retries=3 CMD curl --noproxy 127.0.0.1 -A Docker-HealthCheck -m 3 -w " - %{http_code}" -sS http://127.0.0.1:4567/info || exit 1
+

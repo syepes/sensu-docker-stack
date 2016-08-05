@@ -7,7 +7,7 @@
 #  -v ~/key.pem:/etc/sensu/ssl/key.pem (Optional) \
 #  -e CLIENT_NAME=sensu-client (Optional) \
 #  -e CLIENT_ADDRESS=10.0.0.1 (Optional) \
-#  -e CLIENT_SUBSCRIPTIONS=os,metrics \
+#  -e CLIENT_SUBSCRIPTIONS=metrics_os,other \
 #  -e RABBITMQ_HOST=rabbitmq \
 #  -e RABBITMQ_PORT=5671 \
 #  -e RABBITMQ_VHOST="/sensu" \
@@ -50,4 +50,5 @@ RUN        chmod 755 /*.sh
 EXPOSE     3030
 ENTRYPOINT ["/run.sh"]
 
-HEALTHCHECK --interval=1m --timeout=3s --retries=3 CMD ps -e |grep sensu-client || exit 1
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 CMD ps -p $(cat /var/run/sensu/sensu-client.pid) || exit 1
+

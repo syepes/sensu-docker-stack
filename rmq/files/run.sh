@@ -40,39 +40,16 @@ if [[ -f ${RABBITMQ_HOME}/etc/rabbitmq/cacert.pem ]]; then
 fi
 
 if [[ "${use_ssl}" == "yes" ]]; then
-    #mkdir -p /opt || true
-    # Create combined cert
-    #cat ${SSL_CERT_FILE} ${SSL_KEY_FILE} > /opt/combined.pem
-    #chmod 0400 /opt/combined.pem
-
-    # More ENV vars for make clustering happiness we don't handle clustering in this script, but these args should ensure
-    # clustered SSL-enabled members will talk nicely
-    #export ERL_SSL_PATH="/usr/lib/erlang/lib/ssl-7.1/ebin"
-    #export RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="-pa ${ERL_SSL_PATH} -proto_dist inet_tls -ssl_dist_opt server_certfile /opt/combined.pem -ssl_dist_opt server_secure_renegotiate true client_secure_renegotiate true"
-    #export RABBITMQ_CTL_ERL_ARGS="-pa ${ERL_SSL_PATH} -proto_dist inet_tls -ssl_dist_opt server_certfile /opt/combined.pem -ssl_dist_opt server_secure_renegotiate true client_secure_renegotiate true"
-
-    echo "> Launching RabbitMQ+SSL"
+    echo "> Setup RabbitMQ+SSL"
     echo -e " - SSL_CERT_FILE: $SSL_CERT_FILE\n - SSL_KEY_FILE: $SSL_KEY_FILE\n - SSL_CA_FILE: $SSL_CA_FILE"
     cp -f ${RABBITMQ_HOME}/etc/rabbitmq/ssl.config ${RABBITMQ_HOME}/etc/rabbitmq/rabbitmq.config
 else
-    echo "> Launching RabbitMQ"
+    echo "> Setup RabbitMQ"
     cp -f ${RABBITMQ_HOME}/etc/rabbitmq/standard.config ${RABBITMQ_HOME}/etc/rabbitmq/rabbitmq.config
 fi
 
-
-if [ -z "$CLUSTER_WITH" -o "$CLUSTER_WITH" = "$(hostname)" ]; then
-  echo "> Running as single server"
-  rabbitmq-server &
-else
-  echo "> Running as clustered server"
-  rabbitmq-server -detached
-  rabbitmqctl stop_app
-
-  echo "> Joining cluster $CLUSTER_WITH"
-  rabbitmqctl join_cluster ${RAM_NODE:+--ram} $RABBITMQ_NODENAME@$CLUSTER_WITH
-
-  rabbitmqctl start_app
-fi
+echo "> Launching server"
+rabbitmq-server &
 
 # Capture the PID
 rmq_pid=$!

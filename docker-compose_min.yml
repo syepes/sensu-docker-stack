@@ -1,4 +1,12 @@
 version: '2'
+networks:
+  sensu_front:
+    driver: bridge
+  sensu_data:
+    driver: bridge
+  sensu_trans:
+    driver: bridge
+
 services:
   redis:
     build: redis
@@ -6,6 +14,8 @@ services:
     container_name: redis
     hostname: redis
     restart: always
+    networks:
+      - sensu_data
     ports:
       - "6379:6379"
   rmq1:
@@ -14,6 +24,8 @@ services:
     container_name: rmq1
     hostname: rmq1
     restart: always
+    networks:
+      - sensu_trans
     environment:
       - ERLANG_COOKIE=5673f5aeb1d3a2db81de74a78f44ba14
     ports:
@@ -26,84 +38,76 @@ services:
     container_name: rmq2
     hostname: rmq2
     restart: always
+    networks:
+      - sensu_trans
     links:
       - rmq1
     environment:
       - ERLANG_COOKIE=5673f5aeb1d3a2db81de74a78f44ba14
-      - CLUSTER_WITH=rmq1
-      - RAM_NODE=true
-    ports:
-      - "5673:5672"
-      - "15673:15672"
   rmq3:
     build: rmq
     image: rmq
     container_name: rmq3
     hostname: rmq3
     restart: always
+    networks:
+      - sensu_trans
     links:
       - rmq1
       - rmq2
     environment:
       - ERLANG_COOKIE=5673f5aeb1d3a2db81de74a78f44ba14
-      - CLUSTER_WITH=rmq1
-    ports:
-      - "5674:5672"
   sensu-server1:
     build: sensu-server
     image: sensu-server
     container_name: sensu-server1
     hostname: sensu-server1
     restart: always
-    depends_on:
-      - redis
-      - rmq1
-      - rmq2
-      - rmq3
+    networks:
+      - sensu_data
+      - sensu_trans
     links:
-      - redis
       - rmq1
       - rmq2
       - rmq3
+      - redis
     environment:
       - RABBITMQ_HOST=rmq1,rmq2,rmq3
       - CLIENT_SUBSCRIPTIONS=metrics_os
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-    entrypoint: dockerize -wait tcp://redis:6379 -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh
+    entrypoint: dockerize -timeout 120s -wait tcp://redis:6379 -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh
   sensu-server2:
     build: sensu-server
     image: sensu-server
     container_name: sensu-server2
     hostname: sensu-server2
     restart: always
-    depends_on:
-      - redis
-      - rmq1
-      - rmq2
-      - rmq3
+    networks:
+      - sensu_data
+      - sensu_trans
     links:
-      - redis
       - rmq1
       - rmq2
       - rmq3
+      - redis
     environment:
       - RABBITMQ_HOST=rmq1,rmq2,rmq3
       - CLIENT_SUBSCRIPTIONS=metrics_os
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-    entrypoint: dockerize -wait tcp://redis:6379 -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh
+    entrypoint: dockerize -timeout 120s -wait tcp://redis:6379 -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh
   sensu-api:
     build: sensu-api
     image: sensu-api
     container_name: sensu-api
     hostname: sensu-api
-    restart: no
+    restart: on-failure:3
+    networks:
+      - sensu_front
+      - sensu_data
+      - sensu_trans
     depends_on:
-      - redis
-      - rmq1
-      - rmq2
-      - rmq3
       - sensu-server1
     links:
       - rmq1
@@ -114,7 +118,7 @@ services:
       - RABBITMQ_HOST=rmq1,rmq2,rmq3
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-    entrypoint: dockerize -wait tcp://redis:6379 -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh
+    entrypoint: dockerize -timeout 120s -wait tcp://redis:6379 -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh
     ports:
       - "3000:3000"
       - "4567:4567"
@@ -123,12 +127,17 @@ services:
     image: sensu-client
     container_name: sensu-client1
     hostname: sensu-client1
-    restart: no
+    restart: "no"
+    networks:
+      - sensu_trans
     links:
       - rmq1
+      - rmq2
+      - rmq3
     environment:
       - RABBITMQ_HOST=rmq1,rmq2,rmq3
       - CLIENT_SUBSCRIPTIONS=metrics_os
     ports:
       - "3030:3030"
-    entrypoint: dockerize -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh
+    entrypoint: dockerize -timeout 120s -wait tcp://rmq1:5671 -wait tcp://rmq2:5671 -wait tcp://rmq3:5671 /run.sh
+
