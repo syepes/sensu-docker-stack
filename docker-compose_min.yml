@@ -42,6 +42,8 @@ services:
       - sensu_trans
     links:
       - rmq1
+    ports:
+      - "15673:15672"
     environment:
       - ERLANG_COOKIE=5673f5aeb1d3a2db81de74a78f44ba14
   rmq3:
@@ -55,6 +57,8 @@ services:
     links:
       - rmq1
       - rmq2
+    ports:
+      - "15674:15672"
     environment:
       - ERLANG_COOKIE=5673f5aeb1d3a2db81de74a78f44ba14
   sensu-server1:

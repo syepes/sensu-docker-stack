@@ -1,7 +1,7 @@
 # Usage:
 #
 # docker build --force-rm -t sensu-client .
-# docker run -d --name sensu-client1 -h sensu-client1 -e CLIENT_SUBSCRIPTIONS=metrics_os -e RABBITMQ_HOST=172.17.0.1 sensu-client
+# docker run -d --name sensu-client1 -h sensu-client1 -e CLIENT_SUBSCRIPTIONS=metrics_os -e RABBITMQ_HOST=172.17.0.1,172.17.0.1,172.17.0.1 sensu-client
 # docker run \
 #  -v ~/cert.pem:/etc/sensu/ssl/cert.pem (Optional) \
 #  -v ~/key.pem:/etc/sensu/ssl/key.pem (Optional) \
@@ -44,6 +44,7 @@ RUN        yum install -y sensu \
            && yum clean all
 
 COPY       files/ssl/* /etc/sensu/ssl/
+COPY       files/conf.d/* /etc/sensu/conf.d/
 COPY       files/*.sh /
 RUN        chmod 755 /*.sh
 

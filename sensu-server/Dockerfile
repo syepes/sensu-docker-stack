@@ -1,7 +1,7 @@
 # Usage:
 #
 # docker build --force-rm -t sensu-server .
-# docker run -d --name sensu-server -h sensu-server -e CLIENT_SUBSCRIPTIONS=metrics_os -e RABBITMQ_HOST=172.17.0.1 -e REDIS_HOST=172.17.0.1 sensu-server
+# docker run -d --name sensu-server -h sensu-server -e CLIENT_SUBSCRIPTIONS=metrics_os -e RABBITMQ_HOST=172.17.0.1,172.17.0.1,172.17.0.1 -e REDIS_HOST=172.17.0.1 sensu-server
 # docker run \
 #  -v ~/cert.pem:/etc/sensu/ssl/cert.pem (Optional) \
 #  -v ~/key.pem:/etc/sensu/ssl/key.pem (Optional) \
@@ -28,7 +28,7 @@ ENV         DOCKERIZE_VERSION=v0.2.0 \
             REDIS_PORT=6379
 
 # Basic packages & Locals & Create user
-RUN         yum -y install epel-release.noarch initscripts make gcc-c++ \
+RUN         yum -y install epel-release.noarch initscripts curl make gcc-c++ \
             && localedef --no-archive -i en_US -f UTF-8 en_US.UTF-8 \
             && rm -f /etc/localtime && ln -s /usr/share/zoneinfo/UTC /etc/localtime \
             && echo 'ZONE="UTC"' > /etc/sysconfig/clock && echo 'UTC=True' >> /etc/sysconfig/clock \

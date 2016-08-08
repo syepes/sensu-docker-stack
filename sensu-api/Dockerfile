@@ -1,7 +1,7 @@
 # Usage:
 #
 # docker build --force-rm -t sensu-api .
-# docker run -d --name sensu-api -h sensu-api -e RABBITMQ_HOST=172.17.0.1 sensu-api
+# docker run -d --name sensu-api -h sensu-api -e RABBITMQ_HOST=172.17.0.1,172.17.0.1,172.17.0.1 -e REDIS_HOST=172.17.0.1 sensu-api
 # docker run \
 #  -v ~/cert.pem:/etc/sensu/ssl/cert.pem (Optional) \
 #  -v ~/key.pem:/etc/sensu/ssl/key.pem (Optional) \

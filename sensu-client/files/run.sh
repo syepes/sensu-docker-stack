@@ -101,6 +101,7 @@ echo "> Starting: Sensu"
 /etc/init.d/sensu-client start
 tail -f /var/log/sensu/sensu-client.log 2> /dev/null &
 
-while true; do sleep 1000 & wait $!; done
-echo echo "wait loop aborted..." #should not happen
-
+while true; do
+ sleep 15s & wait $!;
+ ps -eo pid |egrep "^\s+$(cat /var/run/sensu/sensu-client.pid)\$" 1>/dev/null || exit 1;
+done
