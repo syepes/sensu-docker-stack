@@ -40,6 +40,7 @@ services:
     links:
       - crate2
   influxdb:
+    build: influxdb
     image: influxdb
     container_name: influxdb
     hostname: influxdb
